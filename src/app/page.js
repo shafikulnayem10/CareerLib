@@ -1,9 +1,12 @@
+import StatsSection from "@/components/StatsSection";
 import Image from "next/image";
 
 export default function Home() {
   return (
- <div>
-      <h1 className="text-4xl font-bold text-center mt-10">Welcome to CareerLib</h1>
- </div>
+    <div className=" bg-zinc-50 font-sans dark:bg-black">
+      
+      <StatsSection></StatsSection>
+
+    </div>
   );
 }

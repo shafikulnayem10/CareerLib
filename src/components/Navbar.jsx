@@ -38,7 +38,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3">
           <div className="relative h-11 w-11 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/20">
             <Image
-              src="/careerliblogo.jpg" 
+              src="/images/careerliblogo.jpg" 
               alt="CareerLib Logo"
               fill
               sizes="44px"
