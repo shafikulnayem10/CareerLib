@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image"; 
 import { Button } from "@heroui/react";
 import { useSession, signOut } from "@/lib/auth-client";
+import { motion } from "motion/react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,10 +32,25 @@ export default function Navbar() {
     },
   ];
 
+ 
+  const buttonClickAnimation = {
+    whileHover: { scale: 1.04 },
+    whileTap: { scale: 0.96 },
+    transition: { type: "spring", stiffness: 400, damping: 15 }
+  };
+
+ 
+  const linkClickAnimation = {
+    whileHover: { scale: 1.06 },
+    whileTap: { scale: 0.95 },
+    transition: { type: "spring", stiffness: 500, damping: 18 }
+  };
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0B0F]/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0B0F]/80 backdrop-blur-xl select-none">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
        
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <div className="relative h-11 w-11 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg shadow-violet-500/20">
             <Image
@@ -58,17 +74,20 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {/* Desktop Menu */}
           <div className="hidden items-center gap-6 md:flex">
-            {/* Nav Links */}
+            {/* Nav Links (Desktop) */}
             <ul className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-2">
               {navLinks.map((link) => (
-                <li key={link.href}>
+                <motion.li 
+                  key={link.href}
+                  {...linkClickAnimation} 
+                >
                   <Link
                     href={link.href}
-                    className="rounded-full px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                    className="block rounded-full px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     {link.label}
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
 
@@ -80,30 +99,37 @@ export default function Navbar() {
               {user ? (
                 <>
                   <span className="text-sm text-gray-300">Hi, {user.name}!</span>
-                  <Button 
-                    onClick={handleSignOut}
-                    variant="ghost"
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    Sign Out
-                  </Button>
+                  <motion.div {...buttonClickAnimation}>
+                    <Button 
+                      onClick={handleSignOut}
+                      variant="ghost"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Sign Out
+                    </Button>
+                  </motion.div>
                 </>
               ) : (
-                <Link
-                  href="/auth/signin"
-                  className="text-sm font-medium text-violet-400 transition hover:text-violet-300"
-                >
-                  Sign In
-                </Link>
-              )}
+                <>
+                  <motion.div {...buttonClickAnimation} className="flex items-center">
+                    <Link
+                      href="/auth/signin"
+                      className="text-sm font-medium text-violet-400 transition hover:text-violet-300 px-2 py-1"
+                    >
+                      Sign In
+                    </Link>
+                  </motion.div>
 
-            
-              <Link
-                href="/auth/signup"
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-black transition hover:bg-gray-200"
-              >
-                Get Started
-              </Link>
+                  <motion.div {...buttonClickAnimation}>
+                    <Link
+                      href="/auth/signup"
+                      className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-black transition hover:bg-gray-200"
+                    >
+                      Get Started
+                    </Link>
+                  </motion.div>
+                </>
+              )}
             </div>
           </div>
 
@@ -114,34 +140,12 @@ export default function Navbar() {
             aria-label="Toggle Menu"
           >
             {isMenuOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
           </button>
@@ -152,18 +156,21 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="border-t border-white/10 bg-[#0B0B0F] md:hidden">
           <div className="space-y-3 px-4 py-6">
-            {/* Nav Links */}
+            {/* Nav Links (Mobile) */}
             <ul className="space-y-2">
               {navLinks.map((link) => (
-                <li key={link.href}>
+                <motion.li 
+                  key={link.href}
+                  {...linkClickAnimation} 
+                >
                   <Link
                     href={link.href}
-                    className="block rounded-xl px-4 py-3 text-base font-medium text-gray-300 transition hover:bg-white/5 hover:text-white"
+                    className="block rounded-xl px-4 py-3 text-base font-medium text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
 
@@ -175,35 +182,42 @@ export default function Navbar() {
                     <span className="px-4 py-2 text-base font-medium text-gray-300">
                       Hi, {user.name}!
                     </span>
-                    <Button 
-                      onClick={() => {
-                        handleSignOut();
-                        setIsMenuOpen(false);
-                      }}
-                      variant="ghost"
-                      className="border-white/20 text-white w-full"
-                    >
-                      Sign Out
-                    </Button>
+                    <motion.div {...buttonClickAnimation} className="w-full">
+                      <Button 
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMenuOpen(false);
+                        }}
+                        variant="ghost"
+                        className="border-white/20 text-white w-full"
+                      >
+                        Sign Out
+                      </Button>
+                    </motion.div>
                   </>
                 ) : (
-                  <Link
-                    href="/auth/signin"
-                    className="rounded-xl px-4 py-3 text-base font-medium text-violet-400 transition hover:bg-white/5"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
+                  <>
+                    <motion.div {...buttonClickAnimation} className="w-full">
+                      <Link
+                        href="/auth/signin"
+                        className="block rounded-xl px-4 py-3 text-base font-medium text-violet-400 transition hover:bg-white/5 w-full text-center"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Sign In
+                      </Link>
+                    </motion.div>
+                    
+                    <motion.div {...buttonClickAnimation} className="w-full">
+                      <Link
+                        href="/auth/signup"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex h-11 w-full items-center justify-center rounded-xl bg-white text-base font-semibold text-black transition hover:bg-gray-200"
+                      >
+                        Get Started
+                      </Link>
+                    </motion.div>
+                  </>
                 )}
-
-              
-                <Link
-                  href="/auth/signup"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex h-11 w-full items-center justify-center rounded-xl bg-white text-base font-semibold text-black transition hover:bg-gray-200"
-                >
-                  Get Started
-                </Link>
               </div>
             </div>
           </div>

@@ -6,7 +6,7 @@ import {
   Magnifier,
   Star,
 } from "@gravity-ui/icons";
-import { motion } from "framer-motion"; 
+import { motion } from "motion/react";
 
 export default function StatsSection() {
   const stats = [
@@ -35,7 +35,6 @@ export default function StatsSection() {
       label: "Satisfaction Rate",
     },
   ];
-
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -78,7 +77,7 @@ export default function StatsSection() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 2 }}
           className="mx-auto max-w-3xl text-center"
         >
           <h2 className="text-2xl font-medium leading-relaxed text-white/90">
@@ -100,7 +99,10 @@ export default function StatsSection() {
             <motion.div
               key={stat.id}
               variants={itemVariants}
-              className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl transition duration-300 hover:border-violet-500/30"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 1.08 }} 
+              transition={{ type: "spring", stiffness: 400, damping: 17 }} 
+              className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl transition-colors duration-300 hover:border-violet-500/30 cursor-pointer select-none"
             >
               {/* Card Glow */}
               <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-white/10 blur-3xl transition duration-300 group-hover:bg-violet-500/20" />
