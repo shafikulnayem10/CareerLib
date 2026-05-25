@@ -97,14 +97,13 @@ export default function Navbar() {
                 </Link>
               )}
 
-              <Button
-                as={Link}
-                href="/register"
-                radius="lg"
-                className="h-11 bg-white px-6 text-sm font-semibold text-black hover:bg-gray-200"
+            
+              <Link
+                href="/auth/signup"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-6 text-sm font-semibold text-black transition hover:bg-gray-200"
               >
                 Get Started
-              </Button>
+              </Link>
             </div>
           </div>
 
@@ -197,15 +196,14 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                <Button
-                  as={Link}
-                  href="/register"
-                  className="bg-white font-semibold text-black w-full"
-                  radius="lg"
+              
+                <Link
+                  href="/auth/signup"
                   onClick={() => setIsMenuOpen(false)}
+                  className="flex h-11 w-full items-center justify-center rounded-xl bg-white text-base font-semibold text-black transition hover:bg-gray-200"
                 >
                   Get Started
-                </Button>
+                </Link>
               </div>
             </div>
           </div>
