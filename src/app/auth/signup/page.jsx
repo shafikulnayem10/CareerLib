@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, Button, Link, TextField, Label, InputGroup, Input } from "@heroui/react";
+import { useRouter } from "next/navigation"; 
+import { Card, Button, Link, TextField, Label, InputGroup, Input, FieldError } from "@heroui/react";
+import { Description, Radio, RadioGroup } from "@heroui/react";
+
 import { Eye, EyeSlash, Person, At, ShieldKeyhole } from "@gravity-ui/icons";
 import { signUp } from "@/lib/auth-client";
 
@@ -13,6 +15,7 @@ export default function SignupPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [role, setRole] = useState("seeker");
 
     // UI States
     const [isVisible, setIsVisible] = useState(false);
@@ -34,30 +37,26 @@ export default function SignupPage() {
                 email,
                 password,
                 name,
+                role,
                 callbackURL: "/",
             });
 
             if (authError) {
                 setError(authError.message || "Something went wrong during signup.");
             } else {
-               
-                setSuccess("Account created successfully! Redirecting to sign in...");
-                
-               
+                setSuccess("Account created successfully! Welcome.");
                 setName("");
                 setEmail("");
                 setPassword("");
-
-               
-                setTimeout(() => {
-                    router.push("/auth/signin");
-                }, 1500);
+                
+            
+                router.push("/");
+                router.refresh(); 
             }
         } catch (err) {
             setError("An unexpected network error occurred.");
         } finally {
-           
-            if (error) setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -125,6 +124,29 @@ export default function SignupPage() {
                             </button>
                         </InputGroup>
                     </TextField>
+
+                    {/* Role Selection */}
+                    <div className="flex flex-col gap-4">
+                        <Label>Role</Label>
+                        <RadioGroup defaultValue="seeker" name="role" onChange={value => setRole(value)} orientation="horizontal">
+                            <Radio value="seeker">
+                                <Radio.Control>
+                                    <Radio.Indicator />
+                                </Radio.Control>
+                                <Radio.Content>
+                                    <Label>Job Seeker</Label>
+                                </Radio.Content>
+                            </Radio>
+                            <Radio value="recruiter">
+                                <Radio.Control>
+                                    <Radio.Indicator />
+                                </Radio.Control>
+                                <Radio.Content>
+                                    <Label>Recruiter</Label>
+                                </Radio.Content>
+                            </Radio>
+                        </RadioGroup>
+                    </div>
 
                     {/* Dynamic Status Badges */}
                     {error && (
