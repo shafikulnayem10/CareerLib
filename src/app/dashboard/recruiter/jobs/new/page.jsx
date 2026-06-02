@@ -16,7 +16,7 @@ import {
     toast
 } from "@heroui/react";
 import { Briefcase, Globe } from "@gravity-ui/icons";
-
+import { createJob } from "@/lib/actions/jobs";
 import { redirect } from "next/navigation";
 
 export default function PostJobPage() {
@@ -51,7 +51,6 @@ export default function PostJobPage() {
         if (!data.deadline) newErrors.deadline = "Application deadline is required";
         if (!data.responsibilities) newErrors.responsibilities = "Responsibilities are required";
         if (!data.requirements) newErrors.requirements = "Requirements are required";
-        
         console.log("Validation errors:", newErrors);
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -68,14 +67,16 @@ export default function PostJobPage() {
             isPubliclyVisible: true,
         };
 
-       
-        console.log("Job Post Payload for Database:", payload);
-        toast.success("Job data logged to console successfully!");
-
-     
+        const res = await createJob(payload);
+        if (res.insertedId) {
+            toast.success("Job posted successfully!");
+            e.target.reset();
+            setIsRemote(false);
+            redirect("/dashboard/recruiter/jobs");
+        }
     };
 
-    
+   
     const textInputClass = "w-full text-white bg-[#1c1c1e] border border-zinc-800 hover:bg-[#242426] focus:border-zinc-600 rounded-lg h-12 px-3 text-sm placeholder:text-zinc-600 outline-none transition-all";
     const textAreaClass = "w-full text-white bg-[#1c1c1e] border border-zinc-800 hover:bg-[#242426] focus:border-zinc-600 rounded-lg p-3 text-sm placeholder:text-zinc-600 outline-none transition-all";
 
@@ -155,7 +156,7 @@ export default function PostJobPage() {
                                 </Select.Popover>
                             </Select>
 
-                            {/* Inline layout grouping for Salary and Currency mapping */}
+                           
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="col-span-2 space-y-1">
                                     <span className="text-zinc-400 font-medium text-sm block">Salary Range</span>
@@ -190,7 +191,7 @@ export default function PostJobPage() {
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-zinc-400 font-medium text-sm">Location</span>
 
-                                    {/* Updated Switch using v3 Compound Component Syntax */}
+                                    
                                     <Switch
                                         isSelected={isRemote}
                                         onChange={setIsRemote}
@@ -209,7 +210,6 @@ export default function PostJobPage() {
                                     <div className="relative flex items-center">
                                         <Globe size={16} className="absolute left-3 text-zinc-600 pointer-events-none z-10" />
                                         <Input
-                                            name="location"
                                             placeholder={isRemote ? "Global / Remote" : "e.g. Austin, TX"}
                                             disabled={isRemote}
                                             className={`${textInputClass} pl-10`}
@@ -236,7 +236,6 @@ export default function PostJobPage() {
                         <TextField name="responsibilities" isInvalid={!!errors.responsibilities} className="flex flex-col gap-1 w-full">
                             <Label className="text-zinc-400 font-medium text-sm">Responsibilities</Label>
                             <TextArea
-                                name="responsibilities"
                                 placeholder="Outline the core everyday responsibilities for this role..."
                                 rows={4}
                                 className={textAreaClass}
@@ -247,7 +246,6 @@ export default function PostJobPage() {
                         <TextField name="requirements" isInvalid={!!errors.requirements} className="flex flex-col gap-1 w-full">
                             <Label className="text-zinc-400 font-medium text-sm">Requirements</Label>
                             <TextArea
-                                name="requirements"
                                 placeholder="List required experience, skills, and certifications..."
                                 rows={4}
                                 className={textAreaClass}
@@ -258,7 +256,6 @@ export default function PostJobPage() {
                         <TextField name="benefits" className="flex flex-col gap-1 w-full">
                             <Label className="text-zinc-400 font-medium text-sm">Benefits (Optional)</Label>
                             <TextArea
-                                name="benefits"
                                 placeholder="Perks, healthcare, equity, remote stipends..."
                                 rows={3}
                                 className={textAreaClass}

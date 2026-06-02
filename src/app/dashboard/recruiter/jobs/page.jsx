@@ -1,14 +1,29 @@
-import { getCompanyJobs } from '@/lib/api/jobs';
-import React from 'react';
-import { Table, Chip, Button, Tooltip } from "@heroui/react";
+"use client";
 
+import { getCompanyJobs } from '@/lib/api/jobs';
+import React, { useEffect, useState } from 'react';
+import { Table, Chip, Button, Tooltip } from "@heroui/react";
 import { Eye, Edit2, Trash2 } from "lucide-react"; 
 
-const RecruiterJobs = async () => {
-    const companyId = 'company_123'; 
-    const jobs = await getCompanyJobs(companyId) || []; 
+const RecruiterJobs = () => {
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Helper to determine status chip coloring
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const companyId = 'company_123'; 
+                const data = await getCompanyJobs(companyId);
+                setJobs(data || []);
+            } catch (error) {
+                console.error("Failed to fetch jobs:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchJobs();
+    }, []);
+
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case 'active':
@@ -19,6 +34,10 @@ const RecruiterJobs = async () => {
                 return 'warning';
         }
     };
+
+    if (loading) {
+        return <div className="p-6 max-w-7xl mx-auto">Loading jobs...</div>;
+    }
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-4">
@@ -55,14 +74,12 @@ const RecruiterJobs = async () => {
                         <Table.Body emptyContent={"No jobs found for this company."}>
                             {jobs.map((job) => (
                                 <Table.Row key={job._id?.$oid || job._id}>
-                                    {/* Job Title */}
                                     <Table.Cell>
                                         <div className="font-medium text-default-800">
                                             {job.jobTitle}
                                         </div>
                                     </Table.Cell>
 
-                                    {/* Type / Category */}
                                     <Table.Cell>
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-sm capitalize font-medium">{job.jobType}</span>
@@ -70,14 +87,12 @@ const RecruiterJobs = async () => {
                                         </div>
                                     </Table.Cell>
 
-                                    {/* Location */}
                                     <Table.Cell>
                                         <span className="text-sm text-default-600">
                                             {job.isRemote ? "Remote" : job.location}
                                         </span>
                                     </Table.Cell>
 
-                                    {/* Status */}
                                     <Table.Cell>
                                         <Chip 
                                             color={getStatusColor(job.status)} 
@@ -89,7 +104,6 @@ const RecruiterJobs = async () => {
                                         </Chip>
                                     </Table.Cell>
 
-                                    {/* Actions */}
                                     <Table.Cell>
                                         <div className="relative flex items-center gap-2">
                                             <Tooltip content="Video Details">
