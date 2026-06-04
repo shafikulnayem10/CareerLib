@@ -32,7 +32,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleLogoUpload = async (e) => {
-        const file = e.target.files;
+        const file = e.target.files?.[0]; 
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
@@ -42,13 +42,14 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
 
         setIsUploading(true);
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', file); 
 
         try {
-            const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+            // Use your actual env variable name from .env
+            const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMAGE_UPLOAD_API;
             
             if (!IMGBB_API_KEY) {
-                throw new Error('ImgBB API key is not configured');
+                throw new Error('ImgBB API key is not configured. Please add NEXT_PUBLIC_IMAGE_UPLOAD_API to your .env file');
             }
 
             const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
@@ -57,7 +58,8 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
             });
 
             if (!response.ok) {
-                throw new Error(`Upload failed with status ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || `Upload failed with status ${response.status}`);
             }
 
             const data = await response.json();
@@ -72,6 +74,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
         } catch (err) {
             console.error('Upload error:', err);
             setErrors(prev => ({ ...prev, logo: err.message || "Network error during logo upload" }));
+            toast.error(err.message || "Upload failed");
         } finally {
             setIsUploading(false);
         }
