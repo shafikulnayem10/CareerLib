@@ -1,7 +1,7 @@
 import JobListingContainer from "@/components/jobs/JobListingContainer";
 import { getJobs } from "@/lib/api/jobs";
 
-export default async function Page() {
+export default async function JobsPage() {
   
   const jobs = await getJobs();
 
