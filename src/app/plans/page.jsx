@@ -95,7 +95,7 @@ const PricingPage = () => {
         {
             name: 'Growth',
             id: 'recruiter_growth',
-            price: '$49',
+            price: '$149',
             period: '/month',
             description: 'Expanded allocation built for expanding companies with active multi-departmental team tracks.',
             icon: <Rocket className="w-5 h-5 text-blue-400" />,
@@ -111,7 +111,7 @@ const PricingPage = () => {
         {
             name: 'Enterprise',
             id: 'recruiter_enterprise',
-            price: '$149',
+            price: '$249',
             period: '/month',
             description: 'High performance structural operations for organizations with continuous large-scale talent acquisition.',
             icon: <Star className="w-5 h-5 text-purple-400" />,

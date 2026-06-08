@@ -7,8 +7,8 @@ import { useSession, signOut } from "@/lib/auth-client";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { data: session, isPending } = useSession();
-  console.log("Session data in Navbar:", session, "Is pending:", isPending);
+  const { data: session } = useSession();
+
   const user = session?.user;
 
   const handleSignOut = async () => {
@@ -27,7 +27,7 @@ export default function Navbar() {
     },
     {
       label: "Pricing",
-      href: "/pricing",
+      href: "/plans",
     },
   ];
 
@@ -37,12 +37,12 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg">
-            <span className="text-xl font-bold text-white">C</span>
+            <span className="text-xl font-bold text-white">P</span>
           </div>
 
           <div className="hidden leading-none sm:block">
             <h1 className="text-lg font-bold text-white">
-              CareerLib
+              Hire Loop
             </h1>
           </div>
         </Link>
