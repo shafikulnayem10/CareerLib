@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-
+// Hero UI Components (v3.1.0 atomic anatomy)
 import { Form, Button, TextField, Label, Input, Description, FieldError } from '@heroui/react';
-
+// Gravity UI Icons for a polished look
 import { ArrowRight, Link, FileText, LayoutHeaderCells } from '@gravity-ui/icons';
 import { submitApplication } from '@/lib/actions/applications';
 
@@ -32,6 +32,7 @@ const JobApply = ({ job, applicant }) => {
             applicantId: applicant?.id,
             applicantName: applicant?.name,
             applicantEmail: applicant?.email,
+            status: 'applied',
             ...formData
         };
 
@@ -103,13 +104,13 @@ const JobApply = ({ job, applicant }) => {
                     </Description>
                 </TextField>
 
-                {/* 3. Additional Notes */}
+                {/* 3. Additional Notes  */}
                 <TextField name="additionalNotes" className="w-full">
                     <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 mb-1.5">
                         <LayoutHeaderCells className="w-4 h-4 text-zinc-400" />
                         Short Message / Notes <span className="text-xs text-zinc-400 font-normal">(Optional)</span>
                     </Label>
-                   
+                  
                     <textarea
                         name="additionalNotes"
                         rows={4}
