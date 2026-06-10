@@ -33,7 +33,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleLogoUpload = async (e) => {
-        const file = e.target.files;
+        const file = e.target.files; 
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
@@ -97,17 +97,19 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
             logo: logoUrl || (company ? company.logo : ''),
             status: company && company.status ? company.status : 'Pending', 
             recruiterId: recruiter.id
-        }
-        setCompany(newCompanyData);
+        };
 
         console.log("Submitted Company Profile Data:", newCompanyData);
 
         const payload = await createCompany(newCompanyData);
 
-        if(payload.insertedId) {
-            const savedCompany = {...company, _id: payload.insertedId}
-            setCompany(savedCompany)
+        if (payload && payload.insertedId) {
+            const savedCompany = { ...newCompanyData, _id: payload.insertedId };
+            setCompany(savedCompany);
             toast.success("Company profile created successfully!");
+        } else {
+            setCompany(prev => ({ ...prev, ...newCompanyData }));
+            toast.success("Company profile updated successfully!");
         }
 
         setErrors({});
@@ -120,7 +122,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
     };
 
     const startEditing = () => {
-        setLogoUrl(company.logo);
+        setLogoUrl(company?.logo || '');
         setIsEditing(true);
     };
 
