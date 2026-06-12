@@ -22,33 +22,72 @@ import { redirect } from "next/navigation";
 export default function PostJobForm({ company }) {
     const [isRemote, setIsRemote] = useState(false);
     const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+  
+    const [formState, setFormState] = useState({
+        jobTitle: '',
+        jobCategory: '',
+        jobType: '',
+        minSalary: '',
+        maxSalary: '',
+        currency: 'USD',
+        location: '',
+        deadline: '',
+        responsibilities: '',
+        requirements: '',
+        benefits: ''
+    });
+
+    const handleInputChange = (field, value) => {
+        setFormState(prev => ({
+            ...prev,
+            [field]: value
+        }));
+        
+        if (errors[field]) {
+            setErrors(prev => ({
+                ...prev,
+                [field]: ''
+            }));
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData.entries());
+        setIsSubmitting(true);
 
         const newErrors = {};
-        if (!data.jobTitle) newErrors.jobTitle = "Job title is required";
-        if (!data.jobCategory) newErrors.jobCategory = "Job category is required";
-        if (!data.jobType) newErrors.jobType = "Job type is required";
-        if (!data.minSalary) newErrors.minSalary = "Minimum salary is required";
-        if (!data.maxSalary) newErrors.maxSalary = "Maximum salary is required";
-        if (!isRemote && !data.location) newErrors.location = "Location is required for non-remote roles";
-        if (!data.deadline) newErrors.deadline = "Application deadline is required";
-        if (!data.responsibilities) newErrors.responsibilities = "Responsibilities are required";
-        if (!data.requirements) newErrors.requirements = "Requirements are required";
+        if (!formState.jobTitle) newErrors.jobTitle = "Job title is required";
+        if (!formState.jobCategory) newErrors.jobCategory = "Job category is required";
+        if (!formState.jobType) newErrors.jobType = "Job type is required";
+        if (!formState.minSalary) newErrors.minSalary = "Minimum salary is required";
+        if (!formState.maxSalary) newErrors.maxSalary = "Maximum salary is required";
+        if (!isRemote && !formState.location) newErrors.location = "Location is required for non-remote roles";
+        if (!formState.deadline) newErrors.deadline = "Application deadline is required";
+        if (!formState.responsibilities) newErrors.responsibilities = "Responsibilities are required";
+        if (!formState.requirements) newErrors.requirements = "Requirements are required";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            setIsSubmitting(false);
             return;
         }
 
         setErrors({});
 
         const payload = {
-            ...data,
+            jobTitle: formState.jobTitle,
+            jobCategory: formState.jobCategory,
+            jobType: formState.jobType,
+            minSalary: formState.minSalary,
+            maxSalary: formState.maxSalary,
+            currency: formState.currency,
+            location: isRemote ? 'Remote' : formState.location,
+            deadline: formState.deadline,
+            responsibilities: formState.responsibilities,
+            requirements: formState.requirements,
+            benefits: formState.benefits,
             isRemote,
             companyId: company._id,
             companyName: company.name,
@@ -57,13 +96,34 @@ export default function PostJobForm({ company }) {
             isPubliclyVisible: true,
         };
 
-        const res = await createJob(payload);
+        try {
+            const res = await createJob(payload);
 
-        if (res.insertedId) {
-            toast.success("Job posted successfully!");
-            e.target.reset();
-            setIsRemote(false);
-            redirect("/dashboard/recruiter/jobs");
+            if (res.insertedId) {
+                toast.success("Job posted successfully!");
+                setFormState({
+                    jobTitle: '',
+                    jobCategory: '',
+                    jobType: '',
+                    minSalary: '',
+                    maxSalary: '',
+                    currency: 'USD',
+                    location: '',
+                    deadline: '',
+                    responsibilities: '',
+                    requirements: '',
+                    benefits: ''
+                });
+                setIsRemote(false);
+                redirect("/dashboard/recruiter/jobs");
+            } else {
+                toast.error(res.message || "Failed to post job. Please try again.");
+            }
+        } catch (error) {
+            console.error("Job posting error:", error);
+            toast.error("An error occurred. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -118,7 +178,7 @@ export default function PostJobForm({ company }) {
 
                 {/* Hero UI Main Form Handler */}
                 {company.status === 'Approved' && (
-                    <Form onSubmit={handleSubmit} className="space-y-8" validationErrors={errors} validationBehavior='aria'>
+                    <form onSubmit={handleSubmit} className="space-y-8">
 
                         {/* SECTION 1: Job Information */}
                         <Fieldset className="space-y-6 w-full">
@@ -129,60 +189,108 @@ export default function PostJobForm({ company }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <TextField name="jobTitle" isInvalid={!!errors.jobTitle} className="flex flex-col gap-1 w-full">
                                     <Label className="text-zinc-400 font-medium text-sm">Job Title</Label>
-                                    <Input placeholder="e.g. Senior Frontend Engineer" className={textInputClass} />
+                                    <Input 
+                                        placeholder="e.g. Senior Frontend Engineer" 
+                                        className={textInputClass}
+                                        value={formState.jobTitle}
+                                        onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                                    />
                                     {errors.jobTitle && <FieldError className="text-xs text-danger mt-1">{errors.jobTitle}</FieldError>}
                                 </TextField>
 
-                                <Select className={selectBoxClass} name="jobCategory" isInvalid={!!errors.jobCategory}>
-                                    <Label className="text-zinc-400 font-medium text-sm mb-1 block">Job Category</Label>
-                                    <Select.Trigger className={triggerClasses}>
-                                        <Select.Value className="text-white placeholder:text-zinc-600" />
-                                        <Select.Indicator />
-                                    </Select.Trigger>
-                                    {errors.jobCategory && <span className="text-xs text-danger mt-1">{errors.jobCategory}</span>}
-                                    <Select.Popover className={popoverClasses}>
-                                        <ListBox className="outline-none">
-                                            <ListBox.Item id="technology" className={listItemClasses} textValue="Technology">Technology</ListBox.Item>
-                                            <ListBox.Item id="design" className={listItemClasses} textValue="Design">Design</ListBox.Item>
-                                            <ListBox.Item id="marketing" className={listItemClasses} textValue="Marketing">Marketing</ListBox.Item>
-                                            <ListBox.Item id="sales" className={listItemClasses} textValue="Sales">Sales</ListBox.Item>
-                                        </ListBox>
-                                    </Select.Popover>
-                                </Select>
+                                <div className="flex flex-col gap-1">
+                                    <Label className="text-zinc-400 font-medium text-sm">Job Category</Label>
+                                    <Select 
+                                        className={selectBoxClass}
+                                        isInvalid={!!errors.jobCategory}
+                                        aria-label="Job Category"
+                                        selectedKeys={formState.jobCategory ? [formState.jobCategory] : []}
+                                        onSelectionChange={(keys) => {
+                                            const value = Array.from(keys)[0];
+                                            handleInputChange('jobCategory', value);
+                                        }}
+                                    >
+                                        <Select.Trigger className={triggerClasses}>
+                                            <Select.Value className="text-white placeholder:text-zinc-600" />
+                                            <Select.Indicator />
+                                        </Select.Trigger>
+                                        {errors.jobCategory && <span className="text-xs text-danger mt-1">{errors.jobCategory}</span>}
+                                        <Select.Popover className={popoverClasses}>
+                                            <ListBox className="outline-none">
+                                                <ListBox.Item id="technology" className={listItemClasses} textValue="Technology">Technology</ListBox.Item>
+                                                <ListBox.Item id="design" className={listItemClasses} textValue="Design">Design</ListBox.Item>
+                                                <ListBox.Item id="marketing" className={listItemClasses} textValue="Marketing">Marketing</ListBox.Item>
+                                                <ListBox.Item id="sales" className={listItemClasses} textValue="Sales">Sales</ListBox.Item>
+                                            </ListBox>
+                                        </Select.Popover>
+                                    </Select>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Select className={selectBoxClass} name="jobType" isInvalid={!!errors.jobType}>
-                                    <Label className="text-zinc-400 font-medium text-sm mb-1 block">Job Type</Label>
-                                    <Select.Trigger className={triggerClasses}>
-                                        <Select.Value />
-                                        <Select.Indicator />
-                                    </Select.Trigger>
-                                    {errors.jobType && <span className="text-xs text-danger mt-1">{errors.jobType}</span>}
-                                    <Select.Popover className={popoverClasses}>
-                                        <ListBox className="outline-none">
-                                            <ListBox.Item id="full-time" className={listItemClasses} textValue="Full-time">Full-time</ListBox.Item>
-                                            <ListBox.Item id="part-time" className={listItemClasses} textValue="Part-time">Part-time</ListBox.Item>
-                                            <ListBox.Item id="contract" className={listItemClasses} textValue="Contract">Contract</ListBox.Item>
-                                            <ListBox.Item id="internship" className={listItemClasses} textValue="Internship">Internship</ListBox.Item>
-                                        </ListBox>
-                                    </Select.Popover>
-                                </Select>
+                                <div className="flex flex-col gap-1">
+                                    <Label className="text-zinc-400 font-medium text-sm">Job Type</Label>
+                                    <Select 
+                                        className={selectBoxClass}
+                                        isInvalid={!!errors.jobType}
+                                        aria-label="Job Type"
+                                        selectedKeys={formState.jobType ? [formState.jobType] : []}
+                                        onSelectionChange={(keys) => {
+                                            const value = Array.from(keys)[0];
+                                            handleInputChange('jobType', value);
+                                        }}
+                                    >
+                                        <Select.Trigger className={triggerClasses}>
+                                            <Select.Value />
+                                            <Select.Indicator />
+                                        </Select.Trigger>
+                                        {errors.jobType && <span className="text-xs text-danger mt-1">{errors.jobType}</span>}
+                                        <Select.Popover className={popoverClasses}>
+                                            <ListBox className="outline-none">
+                                                <ListBox.Item id="full-time" className={listItemClasses} textValue="Full-time">Full-time</ListBox.Item>
+                                                <ListBox.Item id="part-time" className={listItemClasses} textValue="Part-time">Part-time</ListBox.Item>
+                                                <ListBox.Item id="contract" className={listItemClasses} textValue="Contract">Contract</ListBox.Item>
+                                                <ListBox.Item id="internship" className={listItemClasses} textValue="Internship">Internship</ListBox.Item>
+                                            </ListBox>
+                                        </Select.Popover>
+                                    </Select>
+                                </div>
 
                                 <div className="grid grid-cols-3 gap-2">
                                     <div className="col-span-2 space-y-1">
                                         <span className="text-zinc-400 font-medium text-sm block">Salary Range</span>
                                         <div className="flex gap-2">
                                             <TextField name="minSalary" isInvalid={!!errors.minSalary} className="w-full">
-                                                <Input placeholder="Min" type="number" className={textInputClass} />
+                                                <Input 
+                                                    placeholder="Min" 
+                                                    type="number" 
+                                                    className={textInputClass}
+                                                    value={formState.minSalary}
+                                                    onChange={(e) => handleInputChange('minSalary', e.target.value)}
+                                                />
                                             </TextField>
                                             <TextField name="maxSalary" isInvalid={!!errors.maxSalary} className="w-full">
-                                                <Input placeholder="Max" type="number" className={textInputClass} />
+                                                <Input 
+                                                    placeholder="Max" 
+                                                    type="number" 
+                                                    className={textInputClass}
+                                                    value={formState.maxSalary}
+                                                    onChange={(e) => handleInputChange('maxSalary', e.target.value)}
+                                                />
                                             </TextField>
                                         </div>
                                     </div>
 
-                                    <Select className="w-full mt-6" name="currency" defaultSelectedKeys={["USD"]}>
+                                    <Select 
+                                        className="w-full mt-6"
+                                        aria-label="Currency"
+                                        defaultSelectedKeys={["USD"]}
+                                        selectedKeys={[formState.currency]}
+                                        onSelectionChange={(keys) => {
+                                            const value = Array.from(keys)[0];
+                                            handleInputChange('currency', value);
+                                        }}
+                                    >
                                         <Select.Trigger className={triggerClasses}>
                                             <Select.Value />
                                             <Select.Indicator />
@@ -207,6 +315,7 @@ export default function PostJobForm({ company }) {
                                             isSelected={isRemote}
                                             onChange={setIsRemote}
                                             size="sm"
+                                            aria-label="Toggle remote work"
                                         >
                                             <Switch.Control className="bg-zinc-800 data-[selected=true]:bg-white">
                                                 <Switch.Thumb className="bg-zinc-400 data-[selected=true]:bg-black" />
@@ -217,22 +326,29 @@ export default function PostJobForm({ company }) {
                                         </Switch>
                                     </div>
 
-                                    <TextField name="location" isInvalid={!isRemote && !!errors.location} className="flex flex-col gap-1 w-full relative">
+                                    <div className="flex flex-col gap-1 relative">
                                         <div className="relative flex items-center">
                                             <Globe size={16} className="absolute left-3 text-zinc-600 pointer-events-none z-10" />
                                             <Input
                                                 placeholder={isRemote ? "Global / Remote" : "e.g. Austin, TX"}
                                                 disabled={isRemote}
                                                 className={`${textInputClass} pl-10`}
+                                                value={formState.location}
+                                                onChange={(e) => handleInputChange('location', e.target.value)}
                                             />
                                         </div>
-                                        {!isRemote && errors.location && <FieldError className="text-xs text-danger mt-1">{errors.location}</FieldError>}
-                                    </TextField>
+                                        {!isRemote && errors.location && <span className="text-xs text-danger mt-1">{errors.location}</span>}
+                                    </div>
                                 </div>
 
                                 <TextField name="deadline" isInvalid={!!errors.deadline} className="flex flex-col gap-1 w-full">
                                     <Label className="text-zinc-400 font-medium text-sm">Application Deadline</Label>
-                                    <Input type="date" className={textInputClass} />
+                                    <Input 
+                                        type="date" 
+                                        className={textInputClass}
+                                        value={formState.deadline}
+                                        onChange={(e) => handleInputChange('deadline', e.target.value)}
+                                    />
                                     {errors.deadline && <FieldError className="text-xs text-danger mt-1">{errors.deadline}</FieldError>}
                                 </TextField>
                             </div>
@@ -250,6 +366,8 @@ export default function PostJobForm({ company }) {
                                     placeholder="Outline the core everyday responsibilities for this role..."
                                     rows={4}
                                     className={textAreaClass}
+                                    value={formState.responsibilities}
+                                    onChange={(e) => handleInputChange('responsibilities', e.target.value)}
                                 />
                                 {errors.responsibilities && <FieldError className="text-xs text-danger mt-1">{errors.responsibilities}</FieldError>}
                             </TextField>
@@ -260,6 +378,8 @@ export default function PostJobForm({ company }) {
                                     placeholder="List required experience, skills, and certifications..."
                                     rows={4}
                                     className={textAreaClass}
+                                    value={formState.requirements}
+                                    onChange={(e) => handleInputChange('requirements', e.target.value)}
                                 />
                                 {errors.requirements && <FieldError className="text-xs text-danger mt-1">{errors.requirements}</FieldError>}
                             </TextField>
@@ -270,6 +390,8 @@ export default function PostJobForm({ company }) {
                                     placeholder="Perks, healthcare, equity, remote stipends..."
                                     rows={3}
                                     className={textAreaClass}
+                                    value={formState.benefits}
+                                    onChange={(e) => handleInputChange('benefits', e.target.value)}
                                 />
                             </TextField>
                         </Fieldset>
@@ -280,17 +402,19 @@ export default function PostJobForm({ company }) {
                                 type="button"
                                 variant="bordered"
                                 className="border-zinc-800 text-zinc-300 hover:bg-zinc-900 rounded-lg px-6 font-medium h-11"
+                                disabled={isSubmitting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11"
+                                className="bg-white text-black font-semibold hover:bg-zinc-200 rounded-lg px-6 transition-colors h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isSubmitting}
                             >
-                                Post Job
+                                {isSubmitting ? 'Posting...' : 'Post Job'}
                             </Button>
                         </div>
-                    </Form>
+                    </form>
                 )}
             </div>
         </div>

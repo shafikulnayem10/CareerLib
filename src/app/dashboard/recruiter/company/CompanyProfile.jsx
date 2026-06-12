@@ -33,34 +33,56 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleLogoUpload = async (e) => {
-        const file = e.target.files; 
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
+        const file = files[0]; 
+
+        
         if (file.size > 5 * 1024 * 1024) {
             setErrors(prev => ({ ...prev, logo: "File size exceeds 5MB limit" }));
             return;
         }
 
+       
+        if (!['image/png', 'image/jpeg'].includes(file.type)) {
+            setErrors(prev => ({ ...prev, logo: "Only PNG and JPG files are allowed" }));
+            return;
+        }
+
         setIsUploading(true);
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', file); 
 
         try {
-            const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMAGE_UPLOAD_API; 
+            const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMAGE_UPLOAD_API_KEY;
+            
+            if (!IMGBB_API_KEY) {
+                setErrors(prev => ({ ...prev, logo: "API key not configured" }));
+                return;
+            }
+
             const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                 method: 'POST',
                 body: formData
             });
+
+            if (!response.ok) {
+                throw new Error(`API returned status ${response.status}`);
+            }
+
             const data = await response.json();
             
             if (data.success) {
                 setLogoUrl(data.data.url);
                 setErrors(prev => ({ ...prev, logo: null }));
+                toast.success("Logo uploaded successfully!");
             } else {
-                setErrors(prev => ({ ...prev, logo: "Upload failed. Try again." }));
+                setErrors(prev => ({ ...prev, logo: data.error?.message || "Upload failed. Try again." }));
             }
         } catch (err) {
-            setErrors(prev => ({ ...prev, logo: "Network error during logo upload" }));
+            console.error("Logo upload error:", err);
+            setErrors(prev => ({ ...prev, logo: `Network error: ${err.message}` }));
         } finally {
             setIsUploading(false);
         }
@@ -80,7 +102,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
         const newErrors = {};
         if (!companyName) newErrors.companyName = "Company name is required";
         if (!websiteUrl) newErrors.websiteUrl = "Website link is required";
-        if (!location) newErrors.location = "Location coordinates required";
+        if (!location) newErrors.location = "Location is required";
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -101,19 +123,24 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
 
         console.log("Submitted Company Profile Data:", newCompanyData);
 
-        const payload = await createCompany(newCompanyData);
+        try {
+            const payload = await createCompany(newCompanyData);
 
-        if (payload && payload.insertedId) {
-            const savedCompany = { ...newCompanyData, _id: payload.insertedId };
-            setCompany(savedCompany);
-            toast.success("Company profile created successfully!");
-        } else {
-            setCompany(prev => ({ ...prev, ...newCompanyData }));
-            toast.success("Company profile updated successfully!");
+            if (payload && payload.insertedId) {
+                const savedCompany = { ...newCompanyData, _id: payload.insertedId };
+                setCompany(savedCompany);
+                toast.success("Company profile created successfully!");
+            } else {
+                setCompany(prev => ({ ...prev, ...newCompanyData }));
+                toast.success("Company profile updated successfully!");
+            }
+
+            setErrors({});
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Submit error:", err);
+            toast.error("Failed to save company profile");
         }
-
-        setErrors({});
-        setIsEditing(false);
     };
 
     const startRegistration = () => {
@@ -323,6 +350,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
                                         accept="image/png, image/jpeg" 
                                         onChange={handleLogoUpload} 
                                         className="hidden" 
+                                        disabled={isUploading}
                                     />
                                     {logoUrl ? (
                                         <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
@@ -335,7 +363,7 @@ export default function CompanyProfile({ recruiter, recruiterCompany }) {
                                         {isUploading ? 'Uploading file...' : 'Upload image'}
                                     </span>
                                     <span className="text-xs text-zinc-600 mt-0.5">PNG, JPG up to 5MB</span>
-                                    {errors.logo && <span className="text-xs text-danger mt-1">{errors.logo}</span>}
+                                    {errors.logo && <span className="text-xs text-red-500 mt-1">{errors.logo}</span>}
                                 </div>
                             </div>
                         </div>

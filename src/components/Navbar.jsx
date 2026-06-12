@@ -52,12 +52,12 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 shadow-lg">
-            <span className="text-xl font-bold text-white">P</span>
+            <span className="text-xl font-bold text-white">C</span>
           </div>
 
           <div className="hidden leading-none sm:block">
             <h1 className="text-lg font-bold text-white">
-              Hire Loop
+              CareerLib
             </h1>
           </div>
         </Link>

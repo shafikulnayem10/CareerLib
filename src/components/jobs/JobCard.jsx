@@ -51,7 +51,7 @@ export default function JobCard({ job }) {
 
       {/* Card Content: Badges/Tags & Technical Details */}
       <Card.Content className="flex flex-col gap-5 p-0 py-4">
-        {/* Badge Grid matching your reference layout */}
+     
         <div className="flex flex-wrap gap-2">
           {/* Location Tag */}
           {job.location && (
