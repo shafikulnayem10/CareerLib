@@ -10,7 +10,7 @@ export default function AdminUsersTable({ users }) {
     const [pendingChange, setPendingChange] = useState(null); 
     const [isUpdating, setIsUpdating] = useState(false);
 
-    // Helper function to format MongoDB ISO dates to 'MMM DD, YYYY'
+
     const formatDate = (dateObj) => {
         if (!dateObj || !dateObj.$date) return 'N/A';
         const date = new Date(dateObj.$date);
@@ -21,7 +21,7 @@ export default function AdminUsersTable({ users }) {
         });
     };
 
-    // Safe accessor for MongoDB OID
+   
     const getUserId = (user) => user._id?.$oid || user.id;
 
   
