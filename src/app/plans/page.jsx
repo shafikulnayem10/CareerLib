@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
-
+// Gravity UI Icons for a polished visual identity
 import {
     Check,
     CircleQuestion,
@@ -23,7 +23,8 @@ const PricingPage = () => {
         setOpenFaq(openFaq === index ? null : index);
     };
 
-    
+    // Organized Data Structuring based directly on your provided image & text parameters
+      
     const seekerPlans = [
         {
             name: 'Free',
@@ -127,6 +128,7 @@ const PricingPage = () => {
             popular: false
         }
     ];
+
 
     const faqs = [
         {

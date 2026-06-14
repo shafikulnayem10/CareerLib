@@ -1,4 +1,5 @@
-import AdminUsersTable from '@/components/dashbaord/AdminUsersTable';
+// import AdminUsersTable from '@/components/dashbaord/AdminUsersTable';
+import AdminUsersTable from '@/components/dashboard/AdminUsersTable';
 import { getUsersList } from '@/lib/api/users';
 import React from 'react';
 

@@ -1,4 +1,4 @@
-
+// import CompanyTable from '@/components/dashbaord/CompanyTable';
 import CompanyTable from '@/components/dashboard/CompanyTable';
 import { getCompanies } from '@/lib/api/companies';
 import React from 'react';
