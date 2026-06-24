@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { Card, Button, Link, TextField, Label, InputGroup, Input, FieldError } from "@heroui/react";
 import { Description, Radio, RadioGroup } from "@heroui/react";
-
 import { Eye, EyeSlash, Person, At, ShieldKeyhole } from "@gravity-ui/icons";
-import { signUp } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignupPage() {
@@ -34,28 +32,56 @@ export default function SignupPage() {
         setSuccess("");
         setIsLoading(true);
 
-        const plan = role === 'seeker' ? 'seeker_free' : 'recruiter_free';
-
         try {
-            const { data, error: authError } = await signUp.email({
-                email,
-                password,
-                name,
-                role,
-                plan
+            // Call your backend registration endpoint
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    name,
+                    role
+                }),
             });
 
-            if (authError) {
-                setError(authError.message || "Something went wrong during signup.");
-            } else {
-                setSuccess("Account created successfully! Welcome.");
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.message || "Registration failed. Please try again.");
+                setIsLoading(false);
+                return;
+            }
+
+            // Registration successful
+            if (data.success) {
+                // Check if welcome email was sent
+                if (data.emailStatus && data.emailStatus.success) {
+                    setSuccess("Account created successfully! A welcome email has been sent to your email address.");
+                } else {
+                    setSuccess("Account created successfully! You can now sign in.");
+                  
+                    console.warn('Welcome email not sent:', data.emailStatus?.error);
+                }
+
+                // Clear form
                 setName("");
                 setEmail("");
                 setPassword("");
-                router.push(redirectTo);
+                
+                // Redirect after short delay to show success message
+                setTimeout(() => {
+                    router.push(`/auth/signin?redirect=${redirectTo}`);
+                }, 3000);
+            } else {
+                setError(data.message || "Registration failed. Please try again.");
             }
+
         } catch (err) {
-            setError("An unexpected network error occurred.");
+            console.error('Signup error:', err);
+            setError("An unexpected network error occurred. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -128,8 +154,8 @@ export default function SignupPage() {
 
                     {/* Role Selection */}
                     <div className="flex flex-col gap-4">
-                        <Label>Subscription plan</Label>
-                        <RadioGroup defaultValue="seeker" name="role" onChange = {value => setRole(value)} orientation="horizontal">
+                        <Label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Account Type</Label>
+                        <RadioGroup defaultValue="seeker" name="role" onChange={setRole} orientation="horizontal">
                             <Radio value="seeker">
                                 <Radio.Control>
                                     <Radio.Indicator />
@@ -170,13 +196,13 @@ export default function SignupPage() {
                         isLoading={isLoading}
                         isDisabled={isLoading}
                     >
-                        Sign Up
+                        {isLoading ? "Creating Account..." : "Sign Up"}
                     </Button>
 
                     {/* Navigation Option */}
                     <div className="text-center pt-4 border-t border-zinc-100 dark:border-zinc-800 mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                         Already have an account?{" "}
-                        <Link href={`/auth/signin?redirect=${redirectTo}    `} className="font-medium cursor-pointer text-sm text-blue-600 dark:text-blue-400">
+                        <Link href={`/auth/signin?redirect=${redirectTo}`} className="font-medium cursor-pointer text-sm text-blue-600 dark:text-blue-400">
                             Sign in instead
                         </Link>
                     </div>
